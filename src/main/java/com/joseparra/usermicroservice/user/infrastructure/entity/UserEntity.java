@@ -28,9 +28,9 @@ public class UserEntity extends AbstractEntity {
 	@NotBlank(message = "Surname can't be blank")
 	private String surname;
 	@Email(message = "Email isn't valid")
-	@NotEmpty(message = "Email can't be empty")
+	@NotEmpty(message = "Email can't be blank")
 	@Column(unique = true)
 	private String email;
-	@NotEmpty(message = "Information can't be empty")
+	@NotEmpty(message = "Information can't be blank")
 	private String information;
 }
