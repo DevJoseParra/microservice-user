@@ -21,8 +21,8 @@ public class UserDto {
 	@NotBlank(message = "Surname can't be blank")
 	private String surname;
 	@Email(message = "Email isn't valid")
-	@NotBlank(message = "Email can't be empty")
+	@NotBlank(message = "Email can't be blank")
 	private String email;
-	@NotBlank(message = "Information can't be empty")
+	@NotBlank(message = "Information can't be blank")
 	private String information;
 }
