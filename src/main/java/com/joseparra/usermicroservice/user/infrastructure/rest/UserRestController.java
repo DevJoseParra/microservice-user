@@ -45,7 +45,8 @@ public class UserRestController {
 		}
 		UserModel newUser = mapperUser.map(userDto, UserModel.class);
 		newUser = userService.createUser(newUser);
-		return ResponseEntity.ok(mapperUser.map(newUser, UserDto.class));
+		return ResponseEntity.status(HttpStatus.CREATED).body(mapperUser.map(newUser, UserDto.class));
+
 	}
 
 	@GetMapping(value = "/all")
@@ -53,7 +54,7 @@ public class UserRestController {
 		log.info("--LISTING USERS--");
 		List<UserModel> listUsers = userService.listAllUsers();
 		if (listUsers.isEmpty()) {
-			return new ResponseEntity<>("There are't users.", HttpStatus.NO_CONTENT);
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("There are't users.");
 		}
 		return ResponseEntity.ok(listUsers.stream().map(userModel -> mapperUser.map(userModel, UserDto.class))
 				.collect(Collectors.toList()));
