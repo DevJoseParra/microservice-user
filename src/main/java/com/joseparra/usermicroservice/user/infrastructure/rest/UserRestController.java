@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.joseparra.usermicroservice.user.application.exceptions.BadRequestException;
-import com.joseparra.usermicroservice.user.application.exceptions.ResourceNotFoundException;
 import com.joseparra.usermicroservice.user.application.service.IUserService;
 import com.joseparra.usermicroservice.user.domain.model.UserModel;
 import com.joseparra.usermicroservice.user.infrastructure.dtos.UserDto;
@@ -55,31 +53,23 @@ public class UserRestController {
 		log.info("--LISTING USERS--");
 		List<UserModel> listUsers = userService.listAllUsers();
 		if (listUsers.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("There are't users.");
+			return new ResponseEntity<>("There are't users.", HttpStatus.NO_CONTENT);
 		}
 		return ResponseEntity.ok(listUsers.stream().map(userModel -> mapperUser.map(userModel, UserDto.class))
 				.collect(Collectors.toList()));
 	}
 
 	@GetMapping(value = "/id/{userID}")
-	public ResponseEntity<?> getUserById(@PathVariable("userID") Long idUser) {
+	public ResponseEntity<UserDto> getUserById(@PathVariable("userID") Long idUser) {
 		log.info("--GETTING USER BY ID--");
-		try {
-			UserModel userModel = userService.getUserById(idUser);
-			return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
-		} catch (ResourceNotFoundException resourceNotFoundException) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resourceNotFoundException.getMessage());
-		}
+		UserModel userModel = userService.getUserById(idUser);
+		return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
 	}
 
 	@GetMapping(value = "/name/{name}")
-	public ResponseEntity<?> getUserById(@PathVariable("name") String name) {
-		try {
-			UserModel userModel = userService.findByName(name);
-			return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
-		} catch (ResourceNotFoundException resourceNotFoundException) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resourceNotFoundException.getMessage());
-		}
+	public ResponseEntity<UserDto> getUserById(@PathVariable("name") String name) {
+		UserModel userModel = userService.findByName(name);
+		return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
 	}
 
 	@PutMapping("/update")
@@ -89,30 +79,20 @@ public class UserRestController {
 			log.error(messageErrors.toString());
 			return new ResponseEntity<>(messageErrors, HttpStatus.BAD_REQUEST);
 		}
-		try {
-			UserModel userModel = mapperUser.map(userDto, UserModel.class);
-			userModel = userService.updateUser(userModel);
-			return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
-		} catch (ResourceNotFoundException userNotFoundException) {
-			return new ResponseEntity<>(userNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
-		} catch (BadRequestException badRequestException) {
-			return new ResponseEntity<>(badRequestException.getMessage(), HttpStatus.BAD_REQUEST);
-		}
+		UserModel userModel = mapperUser.map(userDto, UserModel.class);
+		userModel = userService.updateUser(userModel);
+		return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
 	}
 
 	@DeleteMapping("/delete/{idUser}")
-	public ResponseEntity<?> deleteProduct(@PathVariable("idUser") Long idUser) {
-		try {
-			userService.deleteUserById(idUser);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (ResourceNotFoundException userNotFoundException) {
-			return new ResponseEntity<>(userNotFoundException.getMessage(), HttpStatus.NOT_FOUND);
-		}
+	public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("idUser") Long idUser) {
+		userService.deleteUserById(idUser);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	private StringBuilder messageErrors(BindingResult bindingResult) {
-		StringBuilder messageErrors = new StringBuilder(
-				"It can't register to the user. The user has " + bindingResult.getFieldErrorCount() + " errors. ");
+		StringBuilder messageErrors = new StringBuilder("It can't register/update to the user. The user has "
+				+ bindingResult.getFieldErrorCount() + " errors. ");
 		List<ObjectError> listErrors = bindingResult.getAllErrors();
 		int numberMessage = 1;
 		for (ObjectError objectError : listErrors) {
