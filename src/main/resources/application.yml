@@ -13,4 +13,17 @@ spring:
     properties:
       hibernate:
         dialect:org.hibernate.dialect.MySQL5Dialect
+        
+  application:
+    name: USER-MICROSERVICE
+    
+    
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
        
