@@ -1,26 +1,18 @@
 package com.joseparra.usermicroservice.user.domain.model;
 
-import java.util.List;
-
-import com.joseparra.usermicroservice.abstractclass.model.AbstractModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserModel extends AbstractModel {
-
+@AllArgsConstructor
+public class Hotel {
 	private String name;
-	private String surname;
-	private String email;
 	private String information;
-	private List<QualificationHotelUser> listQualification;
-
+	private String addrees;
 }
