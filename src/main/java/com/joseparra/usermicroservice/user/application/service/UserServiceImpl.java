@@ -40,10 +40,10 @@ public class UserServiceImpl implements IUserService {
 			throw new ResourceNotFoundException("User", "ID", String.valueOf(idUser));
 		}
 		List<QualificationHotelUser> listQualificationHotelUser = Arrays.stream(restTemplate.getForObject(
-				"http://localhost:8083/api/qualification/v1/all_by_user/" + userModel.getId(), Qualification[].class))
+				"http://QUALIFICATION-MICROSERVICE/api/qualification/v1/all_by_user/" + userModel.getId(), Qualification[].class))
 				.collect(Collectors.toList()).stream().map(qualification -> {
 					String hotelName = restTemplate
-							.getForObject("http://localhost:8082/api/hotel/v1/id/" + qualification.getHotelId(),
+							.getForObject("http://HOTEL-MICROSERVICE/api/hotel/v1/id/" + qualification.getHotelId(),
 									Hotel.class)
 							.getName();
 					return QualificationHotelUser.builder().nameHotel(hotelName).score(qualification.getScore())
