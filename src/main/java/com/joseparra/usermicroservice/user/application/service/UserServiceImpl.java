@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.joseparra.usermicroservice.user.application.exceptions.BadRequestException;
 import com.joseparra.usermicroservice.user.application.exceptions.ResourceNotFoundException;
-import com.joseparra.usermicroservice.user.domain.model.Hotel;
+import com.joseparra.usermicroservice.user.application.externalservices.IHotelService;
 import com.joseparra.usermicroservice.user.domain.model.Qualification;
 import com.joseparra.usermicroservice.user.domain.model.QualificationHotelUser;
 import com.joseparra.usermicroservice.user.domain.model.UserModel;
@@ -24,6 +24,8 @@ public class UserServiceImpl implements IUserService {
 	private IUserRepository userRepository;
 
 	private RestTemplate restTemplate;
+
+	private IHotelService hotelService;
 
 	@Override
 	public List<UserModel> listAllUsers() {
@@ -40,12 +42,9 @@ public class UserServiceImpl implements IUserService {
 			throw new ResourceNotFoundException("User", "ID", String.valueOf(idUser));
 		}
 		List<QualificationHotelUser> listQualificationHotelUser = Arrays.stream(restTemplate.getForObject(
-				"http://QUALIFICATION-MICROSERVICE/api/qualification/v1/all_by_user/" + userModel.getId(), Qualification[].class))
-				.collect(Collectors.toList()).stream().map(qualification -> {
-					String hotelName = restTemplate
-							.getForObject("http://HOTEL-MICROSERVICE/api/hotel/v1/id/" + qualification.getHotelId(),
-									Hotel.class)
-							.getName();
+				"http://QUALIFICATION-MICROSERVICE/api/qualification/v1/all_by_user/" + userModel.getId(),
+				Qualification[].class)).collect(Collectors.toList()).stream().map(qualification -> {
+					String hotelName = hotelService.getHotelById(qualification.getHotelId()).getName();
 					return QualificationHotelUser.builder().nameHotel(hotelName).score(qualification.getScore())
 							.observation(qualification.getObservation()).build();
 				}).collect(Collectors.toList());
