@@ -24,6 +24,8 @@ import com.joseparra.usermicroservice.user.application.service.IUserService;
 import com.joseparra.usermicroservice.user.domain.model.UserModel;
 import com.joseparra.usermicroservice.user.infrastructure.dtos.UserDto;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -60,6 +62,7 @@ public class UserRestController {
 				.collect(Collectors.toList()));
 	}
 
+	@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingHotelFallback")
 	@GetMapping(value = "/id/{userID}")
 	public ResponseEntity<UserDto> getUserById(@PathVariable("userID") Long idUser) {
 		log.info("--GETTING USER BY ID--");
@@ -68,9 +71,16 @@ public class UserRestController {
 	}
 
 	@GetMapping(value = "/name/{name}")
+	@Retry(name = "ratingRetry", fallbackMethod = "ratingFallback")
 	public ResponseEntity<UserDto> getUserById(@PathVariable("name") String name) {
 		UserModel userModel = userService.findByName(name);
 		return ResponseEntity.ok(mapperUser.map(userModel, UserDto.class));
+	}
+	
+	public ResponseEntity<UserDto> ratingFallback(Exception exception) {
+		log.error("Service Unavailable");
+		UserDto user = UserDto.builder().name("Jose Parra").build();
+		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 
 	@PutMapping("/update")
@@ -89,6 +99,12 @@ public class UserRestController {
 	public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("idUser") Long idUser) {
 		userService.deleteUserById(idUser);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	public ResponseEntity<UserDto> ratingHotelFallback(Exception exception) {
+		log.error("Service Unavailable");
+		UserDto user = UserDto.builder().name("Jose Parra").build();
+		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 
 	private StringBuilder messageErrors(BindingResult bindingResult) {

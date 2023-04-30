@@ -33,6 +33,24 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	@Override
+	public UserModel updateUser(UserModel user) throws ResourceNotFoundException, BadRequestException {
+		Long idUser = user.getId();
+		this.validIdUser(idUser);
+		return userRepository.updateUser(user);
+	}
+
+	@Override
+	public UserModel createUser(UserModel user) {
+		return userRepository.createUser(user);
+	}
+
+	@Override
+	public void deleteUserById(Long idUser) {
+		this.validIdUser(idUser);
+		userRepository.deleteUserById(idUser);
+	}
+
+	@Override
 	public UserModel getUserById(Long idUser) throws ResourceNotFoundException, BadRequestException {
 		if (idUser == null) {
 			throw new BadRequestException("Bad Request --> ID=" + idUser);
@@ -55,24 +73,6 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	@Override
-	public UserModel updateUser(UserModel user) throws ResourceNotFoundException, BadRequestException {
-		Long idUser = user.getId();
-		this.validIdUser(idUser);
-		return userRepository.updateUser(user);
-	}
-
-	@Override
-	public UserModel createUser(UserModel user) {
-		return userRepository.createUser(user);
-	}
-
-	@Override
-	public void deleteUserById(Long idUser) {
-		this.validIdUser(idUser);
-		userRepository.deleteUserById(idUser);
-	}
-
-	@Override
 	public UserModel findByName(String name) {
 		if (name == null) {
 			throw new BadRequestException("Bad Request --> NAME=" + name);
@@ -81,6 +81,15 @@ public class UserServiceImpl implements IUserService {
 		if (userModel == null) {
 			throw new ResourceNotFoundException("User", "NAME", String.valueOf(name));
 		}
+		List<QualificationHotelUser> listQualificationHotelUser = Arrays.stream(restTemplate.getForObject(
+				"http://QUALIFICATION-MICROSERVICE/api/qualification/v1/all_by_user/" + userModel.getId(),
+				Qualification[].class)).collect(Collectors.toList()).stream().map(qualification -> {
+					String hotelName = hotelService.getHotelById(qualification.getHotelId()).getName();
+					return QualificationHotelUser.builder().nameHotel(hotelName).score(qualification.getScore())
+							.observation(qualification.getObservation()).build();
+				}).collect(Collectors.toList());
+
+		userModel.setListQualification(listQualificationHotelUser);
 		return userModel;
 	}
 
